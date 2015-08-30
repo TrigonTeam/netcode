@@ -2,6 +2,7 @@ package eu.ondryaso.udp.packet;
 
 import eu.ondryaso.udp.Netcode;
 
+import java.net.InetAddress;
 import java.net.SocketAddress;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,13 +26,13 @@ public class PacketRegister {
         return PacketRegister.pids.get(packet);
     }
 
-    public static Packet createPacket(Netcode server, SocketAddress address, byte id) {
+    public static Packet createPacket(Netcode server, InetAddress address, int port, byte id) {
         Class<? extends Packet> c = PacketRegister.getPacket(id);
         if(c != null) {
             try {
-                return c.getConstructor(Netcode.class).newInstance(server, address);
+                return c.getConstructor(Netcode.class, InetAddress.class, int.class).newInstance(server, address, port);
             } catch (Exception e) {
-                System.out.println(e.getMessage());
+                e.printStackTrace();
                 return null;
             }
         } else {

@@ -3,13 +3,18 @@ package eu.ondryaso.udp.packet;
 import eu.ondryaso.udp.Netcode;
 
 import java.io.UnsupportedEncodingException;
-import java.net.SocketAddress;
+import java.net.InetAddress;
 
 public class PacketWriteStdout extends Packet {
-    private String inner;
+    private String inner = "default";
 
-    public PacketWriteStdout(Netcode server, SocketAddress address) {
-        super(server, address);
+    public PacketWriteStdout(Netcode server, InetAddress address, int port) {
+        super(server, address, port);
+    }
+
+    public PacketWriteStdout(Netcode server, InetAddress address, int port, String str) {
+        super(server, address, port);
+        this.inner = str;
     }
 
     @Override

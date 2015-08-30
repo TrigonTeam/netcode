@@ -14,6 +14,7 @@ public class Netcode {
     private Queue<Pair<Packet, byte[]>> toProcessIncoming = new ConcurrentLinkedQueue<>();
     private Queue<Packet> toProcessOutgoing = new ConcurrentLinkedQueue<>();
     private Queue<Packet> processed = new ConcurrentLinkedQueue<>();
+    private int port;
 
     public Queue<Packet> getProcessedPackets() {
         return this.processed;
@@ -23,14 +24,16 @@ public class Netcode {
         this.toProcessOutgoing.add(p);
     }
 
-    public Netcode() {
+    public Netcode(int port) {
+        this.port = port;
+
         Thread i = new Thread(this::runIncoming);
         Thread o = new Thread(this::runOutgoing);
         Thread p = new Thread(this::process);
 
-        i.run();
-        o.run();
-        p.run();
+        i.start();
+        o.start();
+        p.start();
     }
 
     public void process() {
@@ -50,14 +53,14 @@ public class Netcode {
 
     public void runIncoming() {
         try {
-            DatagramSocket socket = new DatagramSocket();
+            DatagramSocket socket = new DatagramSocket(this.port);
 
             while(!Thread.currentThread().isInterrupted()) {
                 byte[] bytes = new byte[16384];
                 DatagramPacket udpPacket = new DatagramPacket(bytes, bytes.length);
                 socket.receive(udpPacket);
 
-                Packet p = PacketRegister.createPacket(this, udpPacket.getSocketAddress(), bytes[0]);
+                Packet p = PacketRegister.createPacket(this, udpPacket.getAddress(), udpPacket.getPort(), bytes[0]);
                 this.toProcessIncoming.add(new Pair<>(p, bytes));
             }
         } catch (IOException e) {
@@ -78,7 +81,7 @@ public class Netcode {
                         dataExt[0] = PacketRegister.getPacketId(p.getClass());
                         System.arraycopy(data, 0, dataExt, 1, data.length % 16384);
 
-                        DatagramPacket udpPacket = new DatagramPacket(dataExt, dataExt.length, p.getAddress());
+                        DatagramPacket udpPacket = new DatagramPacket(dataExt, dataExt.length, p.getAddress(), p.getPort());
                         socket.send(udpPacket);
                     }
                 }
