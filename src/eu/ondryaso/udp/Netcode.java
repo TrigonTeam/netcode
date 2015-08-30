@@ -16,6 +16,19 @@ public class Netcode {
     private Queue<Packet> processed = new ConcurrentLinkedQueue<>();
     private int port;
 
+    public Netcode(int port) {
+        this.port = port;
+
+        Thread i = new Thread(this::runIncoming);
+        Thread o = new Thread(this::runOutgoing);
+        Thread p = new Thread(this::process);
+
+
+        i.start();
+        o.start();
+        p.start();
+    }
+
     public Queue<Packet> getProcessedPackets() {
         return this.processed;
     }
@@ -24,22 +37,10 @@ public class Netcode {
         this.toProcessOutgoing.add(p);
     }
 
-    public Netcode(int port) {
-        this.port = port;
-
-        Thread i = new Thread(this::runIncoming);
-        Thread o = new Thread(this::runOutgoing);
-        Thread p = new Thread(this::process);
-
-        i.start();
-        o.start();
-        p.start();
-    }
-
     public void process() {
-        while(!Thread.currentThread().isInterrupted()) {
+        while (!Thread.currentThread().isInterrupted()) {
             Pair<Packet, byte[]> proc = this.toProcessIncoming.poll();
-            if(proc != null) {
+            if (proc != null) {
                 Packet p = proc.getKey();
                 byte[] v = proc.getValue();
                 byte[] a = new byte[v.length - 1];
@@ -48,6 +49,12 @@ public class Netcode {
                 p.processIncoming(a);
                 this.processed.add(p);
             }
+
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -55,7 +62,7 @@ public class Netcode {
         try {
             DatagramSocket socket = new DatagramSocket(this.port);
 
-            while(!Thread.currentThread().isInterrupted()) {
+            while (!Thread.currentThread().isInterrupted()) {
                 byte[] bytes = new byte[16384];
                 DatagramPacket udpPacket = new DatagramPacket(bytes, bytes.length);
                 socket.receive(udpPacket);
@@ -63,6 +70,8 @@ public class Netcode {
                 Packet p = PacketRegister.createPacket(this, udpPacket.getAddress(), udpPacket.getPort(), bytes[0]);
                 this.toProcessIncoming.add(new Pair<>(p, bytes));
             }
+
+            socket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -72,11 +81,11 @@ public class Netcode {
         try {
             DatagramSocket socket = new DatagramSocket();
 
-            while(!Thread.currentThread().isInterrupted()) {
+            while (!Thread.currentThread().isInterrupted()) {
                 Packet p = this.toProcessOutgoing.poll();
-                if(p != null) {
+                if (p != null) {
                     byte[] data = p.processOutgoing();
-                    if(data != null) {
+                    if (data != null) {
                         byte[] dataExt = new byte[16384];
                         dataExt[0] = PacketRegister.getPacketId(p.getClass());
                         System.arraycopy(data, 0, dataExt, 1, data.length % 16384);
@@ -85,7 +94,15 @@ public class Netcode {
                         socket.send(udpPacket);
                     }
                 }
+
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
+
+            socket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
