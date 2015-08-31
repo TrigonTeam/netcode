@@ -25,7 +25,8 @@ public class ClientNetcode extends Listener {
 
         this.client = new Client();
         this.client.start();
-        this.client.connect(5000, address, tcp, udp);
+        this.client.getKryo().register(byte[].class);
+        this.client.connect(100000, address, tcp, udp);
         this.client.addListener(this);
 
         ip.start();
@@ -74,6 +75,12 @@ public class ClientNetcode extends Listener {
                     e.printStackTrace();
                 }
             }
+
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -85,11 +92,11 @@ public class ClientNetcode extends Listener {
                 try {
                     byte[] data = b.rawData;
 
-                    int ids = ((data[0] & 0xFF) | (data[0] << 8) & 0xFFFE);
+                    int ids = ((data[0] & 0xFF) | (data[1] << 8) & 0xFFFE);
                     short id = (short) (ids >> 1);
 
                     byte[] packetData = new byte[data.length - 2];
-                    Packet p = PacketRegister.createPacket(b.connection, data[0]);
+                    Packet p = PacketRegister.createPacket(b.connection, id);
 
                     if (p != null) {
                         System.arraycopy(data, 2, packetData, 0, packetData.length);
@@ -104,6 +111,12 @@ public class ClientNetcode extends Listener {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+            }
+
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
     }

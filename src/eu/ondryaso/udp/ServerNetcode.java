@@ -25,6 +25,7 @@ public class ServerNetcode extends Listener {
 
         this.server = new Server();
         this.server.start();
+        this.server.getKryo().register(byte[].class);
         this.server.bind(tcp, udp);
         this.server.addListener(this);
 
@@ -35,8 +36,8 @@ public class ServerNetcode extends Listener {
     @Override
     public void connected(Connection connection) {
         System.out.println("Connected #" + connection.getID() + ":" +
-                connection.getRemoteAddressUDP().getHostName() + "/" +
-                connection.getRemoteAddressUDP().getPort());
+                connection.getRemoteAddressTCP().getHostName() + "/" +
+                connection.getRemoteAddressTCP().getPort());
     }
 
     @Override
@@ -103,11 +104,11 @@ public class ServerNetcode extends Listener {
                 try {
                     byte[] data = b.rawData;
 
-                    int ids = ((data[0] & 0xFF) | (data[0] << 8) & 0xFFFE);
+                    int ids = ((data[0] & 0xFF) | (data[1] << 8) & 0xFFFE);
                     short id = (short) (ids >> 1);
 
                     byte[] packetData = new byte[data.length - 2];
-                    Packet p = PacketRegister.createPacket(b.connection, data[0]);
+                    Packet p = PacketRegister.createPacket(b.connection, id);
 
                     if (p != null) {
                         System.arraycopy(data, 2, packetData, 0, packetData.length);
