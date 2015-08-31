@@ -1,27 +1,18 @@
 package eu.ondryaso.udp.packet;
 
-import eu.ondryaso.udp.Netcode;
 
-import java.net.InetAddress;
+import com.esotericsoftware.kryonet.Connection;
 
 public abstract class Packet {
     protected boolean hasFinished = false;
-    protected Netcode server;
-    protected InetAddress address;
-    protected int port;
+    protected Connection connection;
 
-    public Packet(Netcode server, InetAddress address, int port) {
-        this.server = server;
-        this.address = address;
-        this.port = port;
+    public Packet(Connection connection) {
+        this.connection = connection;
     }
 
-    public InetAddress getAddress() {
-        return this.address;
-    }
-
-    public int getPort() {
-        return this.port;
+    public Connection getConnection() {
+        return this.connection;
     }
 
     public boolean hasFinishedProcessing() {

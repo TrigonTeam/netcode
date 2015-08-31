@@ -1,19 +1,18 @@
 package eu.ondryaso.udp.packet;
 
-import eu.ondryaso.udp.Netcode;
+import com.esotericsoftware.kryonet.Connection;
 
 import java.io.UnsupportedEncodingException;
-import java.net.InetAddress;
 
 public class PacketWriteStdout extends Packet {
     private String inner = "default";
 
-    public PacketWriteStdout(Netcode server, InetAddress address, int port) {
-        super(server, address, port);
+    public PacketWriteStdout(Connection connection) {
+        super(connection);
     }
 
-    public PacketWriteStdout(Netcode server, InetAddress address, int port, String str) {
-        super(server, address, port);
+    public PacketWriteStdout(Connection connection, String str) {
+        super(connection);
         this.inner = str;
     }
 

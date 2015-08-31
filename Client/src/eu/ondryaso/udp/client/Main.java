@@ -1,5 +1,4 @@
-package eu.ondryaso.udp;
-
+package eu.ondryaso.udp.client;
 
 import eu.ondryaso.udp.packet.Packet;
 import eu.ondryaso.udp.packet.PacketRegister;
@@ -7,21 +6,20 @@ import eu.ondryaso.udp.packet.PacketWriteStdout;
 
 import java.io.IOException;
 
-
 public class Main {
     public static void main(String[] args) {
         PacketRegister.registerPacket(PacketWriteStdout.class, (short) 1);
 
         try {
-            ServerNetcode server = new ServerNetcode(1445, 1446);
+            ClientNetcode client = new ClientNetcode("127.0.0.1", 1445, 1446);
             Packet p;
+            int counter = 0;
 
             while(true) {
-                if((p = server.getProcessedPackets().poll()) != null) {
-                    p.useIncoming();
+                client.sendPacketUdp(new PacketWriteStdout(null, "Packet #" + counter++));
 
-                    server.sendPacketUdp(p.getConnection().getID(),
-                            new PacketWriteStdout(p.getConnection(), "k ty"));
+                if((p = client.getProcessedPackets().poll()) != null) {
+                    p.useIncoming();
                 }
 
                 Thread.sleep(50);
@@ -30,6 +28,4 @@ public class Main {
             e.printStackTrace();
         }
     }
-
-
 }
