@@ -86,6 +86,12 @@ public class ServerNetcode extends Listener {
                     e.printStackTrace();
                 }
             }
+
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -116,6 +122,12 @@ public class ServerNetcode extends Listener {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+            }
+
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
     }
